@@ -1,9 +1,29 @@
-[I 10:31:34.808 NotebookApp] Writing notebook server cookie secret to /run/user/1004/jupyter/notebook_cookie_secret
-[W 10:31:34.949 NotebookApp] WARNING: The notebook server is listening on all IP addresses and not using encryption. This is not recommended.
-[W 10:31:34.949 NotebookApp] WARNING: The notebook server is listening on all IP addresses and not using authentication. This is highly insecure and not recommended.
-[I 10:31:34.972 NotebookApp] Serving notebooks from local directory: /home/srikanth/assignment2
-[I 10:31:34.972 NotebookApp] 0 active kernels 
-[I 10:31:34.972 NotebookApp] The IPython Notebook is running at: http://[all ip addresses on your system]:7001/
-[I 10:31:34.972 NotebookApp] Use Control-C to stop this server and shut down all kernels (twice to skip confirmation).
-[W 10:31:44.494 NotebookApp] Notebook FullyConnectedNets.ipynb is not trusted
-[I 10:31:46.524 NotebookApp] Kernel started: 98ab8fc1-a27b-44cc-829a-c80d7ccca21e
+[W 18:46:24.321 NotebookApp] WARNING: The notebook server is listening on all IP addresses and not using encryption. This is not recommended.
+[W 18:46:24.321 NotebookApp] WARNING: The notebook server is listening on all IP addresses and not using authentication. This is highly insecure and not recommended.
+[I 18:46:24.324 NotebookApp] Serving notebooks from local directory: /home/srikanth/assignment2
+[I 18:46:24.324 NotebookApp] 0 active kernels 
+[I 18:46:24.324 NotebookApp] The IPython Notebook is running at: http://[all ip addresses on your system]:7001/
+[I 18:46:24.324 NotebookApp] Use Control-C to stop this server and shut down all kernels (twice to skip confirmation).
+[W 18:46:55.551 NotebookApp] Notebook FullyConnectedNets.ipynb is not trusted
+[I 18:46:57.009 NotebookApp] Kernel started: 0d28e28b-60ce-41ea-bd02-5ade7ee751d5
+[I 18:48:58.257 NotebookApp] Saving file at /FullyConnectedNets.ipynb
+[I 18:50:31.118 NotebookApp] Kernel restarted: 0d28e28b-60ce-41ea-bd02-5ade7ee751d5
+[I 18:50:57.271 NotebookApp] Saving file at /FullyConnectedNets.ipynb
+[I 20:40:13.380 NotebookApp] Saving file at /cs231n/layers.py
+[I 20:40:58.320 NotebookApp] Saving file at /FullyConnectedNets.ipynb
+[I 20:41:26.066 NotebookApp] Saving file at /FullyConnectedNets.ipynb
+[I 20:42:58.365 NotebookApp] Saving file at /FullyConnectedNets.ipynb
+[I 20:44:16.169 NotebookApp] Saving file at /cs231n/layers.py
+[I 20:44:30.156 NotebookApp] Saving file at /cs231n/layers.py
+[I 20:44:41.490 NotebookApp] Saving file at /FullyConnectedNets.ipynb
+[I 20:44:57.896 NotebookApp] Saving file at /FullyConnectedNets.ipynb
+[I 21:04:42.383 NotebookApp] Saving file at /cs231n/layers.py
+[I 21:05:08.358 NotebookApp] Saving file at /cs231n/layers.py
+[I 21:06:58.187 NotebookApp] Saving file at /FullyConnectedNets.ipynb
+[I 21:07:09.501 NotebookApp] Saving file at /cs231n/layers.py
+[I 21:34:58.758 NotebookApp] Saving file at /cs231n/layers.py
+[I 21:36:58.346 NotebookApp] Saving file at /FullyConnectedNets.ipynb
+[I 21:38:22.970 NotebookApp] Saving file at /cs231n/layers.py
+[I 21:38:57.495 NotebookApp] Saving file at /FullyConnectedNets.ipynb
+[I 21:40:57.660 NotebookApp] Saving file at /FullyConnectedNets.ipynb
+[I 21:42:58.416 NotebookApp] Saving file at /FullyConnectedNets.ipynb
