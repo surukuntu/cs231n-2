@@ -1,0 +1,9 @@
+[I 10:31:34.808 NotebookApp] Writing notebook server cookie secret to /run/user/1004/jupyter/notebook_cookie_secret
+[W 10:31:34.949 NotebookApp] WARNING: The notebook server is listening on all IP addresses and not using encryption. This is not recommended.
+[W 10:31:34.949 NotebookApp] WARNING: The notebook server is listening on all IP addresses and not using authentication. This is highly insecure and not recommended.
+[I 10:31:34.972 NotebookApp] Serving notebooks from local directory: /home/srikanth/assignment2
+[I 10:31:34.972 NotebookApp] 0 active kernels 
+[I 10:31:34.972 NotebookApp] The IPython Notebook is running at: http://[all ip addresses on your system]:7001/
+[I 10:31:34.972 NotebookApp] Use Control-C to stop this server and shut down all kernels (twice to skip confirmation).
+[W 10:31:44.494 NotebookApp] Notebook FullyConnectedNets.ipynb is not trusted
+[I 10:31:46.524 NotebookApp] Kernel started: 98ab8fc1-a27b-44cc-829a-c80d7ccca21e
