@@ -81,10 +81,10 @@ class TwoLayerNet(object):
         # TODO: Implement the forward pass for the two-layer net, computing the    #
         # class scores for X and storing them in the scores variable.              #
         ############################################################################
-        w1, b1 = self.params['w1'], self.params['b1']
-        w2, b2 = self.params['w2'], self.params['b2']
-        affine_relu_out, affine_relu_cache = affine_relu_forward(x, w1, b1)
-        scores, affine2_cache = affine_forward(affine_relu_out, w2, b2) 
+        W1, b1 = self.params['W1'], self.params['b1']
+        W2, b2 = self.params['W2'], self.params['b2']
+        affine_relu_out, affine_relu_cache = affine_relu_forward(X, W1, b1)
+        scores, affine2_cache = affine_forward(affine_relu_out, W2, b2) 
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################
@@ -92,7 +92,8 @@ class TwoLayerNet(object):
         # If y is None then we are in test mode so just return scores
         if y is None:
             return scores
-
+        
+        reg = self.reg
         loss, grads = 0, {}
         ############################################################################
         # TODO: Implement the backward pass for the two-layer net. Store the loss  #
@@ -105,11 +106,12 @@ class TwoLayerNet(object):
         # of 0.5 to simplify the expression for the gradient.                      #
         ############################################################################
         loss, dscores = softmax_loss(scores, y)
-        reg = 0.05
-        loss += 0.5 * reg * np.sum(w2 * w2)
-        loss += 0.5 * reg * np.sum(w1 * w1)
-        d_affine2_grad, grads['w2'], grads['b2'] = affine_backward(dscores, affine2_cache)
-        grads['x'], grads['w1'], grads['b1'] = affine_relu_backward(d_affine2_grad, affine2_relu_cache)
+        loss += 0.5 * reg * np.sum(W2 * W2)
+        loss += 0.5 * reg * np.sum(W1 * W1)
+        d_affine2_grad, grads['W2'], grads['b2'] = affine_backward(dscores, affine2_cache)
+        grad_X, grads['W1'], grads['b1'] = affine_relu_backward(d_affine2_grad, affine_relu_cache)
+        grads['W2'] += reg * grads['W2']
+        grads['W1'] += reg * grads['W1']
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################
