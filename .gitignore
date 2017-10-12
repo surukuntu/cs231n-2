@@ -1,4 +1,4 @@
 *.swp
 *.pyc
 .env/*
-./jupyter-notebook-log.txt
+jupyter-notebook-log.txt
