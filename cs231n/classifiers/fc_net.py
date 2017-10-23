@@ -47,7 +47,7 @@ class TwoLayerNet(object):
         # weights and biases using the keys 'W1' and 'b1' and second layer weights #
         # and biases using the keys 'W2' and 'b2'.                                 #
         ############################################################################
-        np.random.seed(0)
+        np.random.seed(2)
         self.params['W1'] = weight_scale * np.random.randn(input_dim, hidden_dim)
         self.params['b1'] = np.zeros(input_dim)
         self.params['W2'] = weight_scale * np.random.randn(hidden_dim, num_classes)
@@ -83,8 +83,8 @@ class TwoLayerNet(object):
         ############################################################################
         W1, b1 = self.params['W1'], self.params['b1']
         W2, b2 = self.params['W2'], self.params['b2']
-        affine_relu_out, affine_relu_cache = affine_relu_forward(X, W1, b1)
-        scores, affine2_cache = affine_forward(affine_relu_out, W2, b2) 
+        X2, affine_relu_cache = affine_relu_forward(X, W1, b1)
+        scores, affine2_cache = affine_forward(X2, W2, b2) 
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################
@@ -108,8 +108,8 @@ class TwoLayerNet(object):
         loss, dscores = softmax_loss(scores, y)
         loss += 0.5 * reg * np.sum(W2 * W2)
         loss += 0.5 * reg * np.sum(W1 * W1)
-        d_affine2_grad, grads['W2'], grads['b2'] = affine_backward(dscores, affine2_cache)
-        grad_X, grads['W1'], grads['b1'] = affine_relu_backward(d_affine2_grad, affine_relu_cache)
+        grad_X2, grads['W2'], grads['b2'] = affine_backward(dscores, affine2_cache)
+        grad_X, grads['W1'], grads['b1'] = affine_relu_backward(grad_X2, affine_relu_cache)
         grads['W2'] += reg * grads['W2']
         grads['W1'] += reg * grads['W1']
         ############################################################################
