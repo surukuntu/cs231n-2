@@ -26,7 +26,11 @@ def affine_forward(x, w, b):
     # will need to reshape the input into rows.                               #
     ###########################################################################
     # reshape from (N, d_1, ..., d_k) to (N, D) where D = d_1 * d_2 * ... * d_k
+#    print("X shape", x.shape)
     xv = x.reshape(x.shape[0], np.prod(x.shape[1:])) 
+#    print("xv shape", xv.shape)
+#    print("w shape", w.shape)
+#    print("b shape", b.shape)
     out = np.dot(xv, w)+b
     ###########################################################################
     #                             END OF YOUR CODE                            #
