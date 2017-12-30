@@ -186,13 +186,11 @@ def batchnorm_forward(x, gamma, beta, bn_param):
         #######################################################################
         mean = np.mean(x, axis=0) #(D,)
         var = np.var(x, axis=0) #(D,)
-        q = x - mean #(N,D)
-        r = 1/np.sqrt(var+eps)  #(D,)
-        p = q * r #(N,D)
-        out = gamma * p + beta #(N,D)
+        xhat = (x - mean)/np.sqrt(var+eps) #(N,D)
+        out = gamma * xhat + beta #(N,D)
         running_mean = momentum * running_mean + (1 - momentum) * mean #(D,)
         running_var = momentum * running_var + (1 - momentum) * var #(D,)  
-        cache = (gamma, p, r)
+        cache = (gamma, beta, eps, x)
         #######################################################################
         #                           END OF YOUR CODE                          #
         #######################################################################
@@ -241,21 +239,66 @@ def batchnorm_backward(dout, cache):
     # results in the dx, dgamma, and dbeta variables.                         #
     ###########################################################################
     N = dout.shape[0]
-    gamma, p, r = cache
-    #f = gamma * p + beta
-    dfbeta = 1
-    dfgamma = p #(N,D) 
-    dfp = gamma #(D,)
-    # p = q * r
-    dpq = r #(D,)
-    # q = x - mu
-    dqx = 1
-    dpx = dpq * dqx # (D,)
-    dfx = dfp * dpx #(D,)
+    gamma, beta, eps, x = cache
+    u = np.mean(x, axis=0) #(D,)
+    var = np.var(x, axis=0) #(D,)
+    invvar = 1/np.sqrt(var + eps) #(D,)
+    xhat = (x - u)* invvar #(N,D)
     
-    dbeta = np.sum(dout, axis=0) * dfbeta #(D,)
-    dgamma = np.sum(dout*dfgamma, axis=0)#(D,)
-    dx = dout * dfx #(N,D)
+    #f = gamma * xhat + beta
+    df_beta = 1
+    d_beta = np.sum(dout * df_beta, axis=0) #(D,)
+    
+    df_xhat_gamma = 1
+    d_xhat_gamma = dout * 1 #(N,D)
+    
+    #f = gamma * xhat
+    df_gamma = xhat
+    d_gamma = np.sum(df_gamma * d_xhat_gamma, axis=0) #(D,)
+    
+    df_xhat = gamma
+    d_xhat = df_xhat * d_xhat_gamma #(N,D)
+    
+    #f = (x-u) * 1/sqrt(var+eps) = xmu * invvar
+    df_xmu1 = invvar
+    d_xmu1 = df_xmu1 * d_xhat #(N, D)
+    
+    df_invvar = x - u #(N,D)
+    d_invvar = np.sum(df_invvar * d_xhat, axis=0) #(D,)
+    
+    #f = 1/sqrt(var+eps)     
+    df_sqrt_var = -1/(var + eps) #d(1/x) = -1/x^2
+    d_sqrt_var = df_sqrt_var * d_invvar #(D,)
+    
+    #f = sqrt(var+eps)
+    df_var = 0.5 * invvar #df(sqrt(x)) = 1/(2 * sqrt(x)) = 0.5 * 1/sqrt(x)
+    d_var = df_var * d_sqrt_var #(D,) Note: d_var_eps = d_var 
+    
+    #f = var = 1/N * np.sum(k, axis=0) ; k = xi-u * xi-u
+    df_xmu_sq = 1/N * np.ones(x.shape) #(N,D)
+    d_xmu_sq = df_xmu_sq * d_var #(N,D)
+    
+    #f = xi-u * xi-u
+    df_xmu2 = 2 * (x - u) #(N,D)
+    d_xmu2 = df_xmu2 * d_xmu_sq #(N,D)
+    
+    #combine d_xmu1 + d_xmu2 to get overall influence of x-u on Loss function.
+    #this is because x-u is being used in both numerator and denominator of xhat
+    d_xmu = d_xmu1 + d_xmu2 #(N,D)
+    
+    #f = x - u
+    df_x1 = 1
+    d_x1 = df_x1 * d_xmu #(N,D)
+    
+    df_u = -1
+    d_u = np.sum(df_u * d_xmu, axis=0) #(D,)
+    
+    #f = u = 1/N * np.sum(x, axis=0)
+    df_x2 = 1/N * np.ones(x.shape) #(N,D)
+    d_x2 = df_x2 * d_u #(N,D)
+    
+    d_x = d_x1 + d_x2 #add influence of x on x-u and u
+    dx, dgamma, dbeta = d_x, d_gamma, d_beta
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
