@@ -181,6 +181,11 @@ class FullyConnectedNet(object):
         biases = {'b'+str(i) : np.zeros(dims[i]) for i in range(1,len(dims))}
         self.params.update(weights)
         self.params.update(biases)
+        if self.use_batchnorm:
+            gammas = {'gamma'+str(i) : np.ones(dims[i]) for i in range(1,len(dims)-1)}
+            betas = {'beta'+str(i) : np.zeros(dims[i]) for i in range(1,len(dims)-1)}
+            self.params.update(gammas)
+            self.params.update(betas)
             
         ############################################################################
         #                             END OF YOUR CODE                             #
@@ -247,7 +252,13 @@ class FullyConnectedNet(object):
             if(i == self.num_layers):
                 scores, caches[i] = affine_forward(cur_x, cur_w, cur_b)
             else:
-                scores, caches[i] = affine_relu_forward(cur_x, cur_w, cur_b)
+                if self.use_batchnorm:
+                    cur_gamma = self.params['gamma' + str(i)]
+                    cur_beta = self.params['beta' + str(i)]
+                    cur_bn_param = self.bn_params[i-1]
+                    scores, caches[i] = affine_bn_relu_forward(cur_x, cur_w, cur_b, cur_gamma, cur_beta, cur_bn_param)
+                else:    
+                    scores, caches[i] = affine_relu_forward(cur_x, cur_w, cur_b)
             cur_x = scores
             
         ############################################################################
@@ -281,13 +292,61 @@ class FullyConnectedNet(object):
         for i in reversed(range(1, self.num_layers+1)):
             cache = caches[i]
             if(i == self.num_layers):
-                dout, grads['W'+str(i)], grads['b'+str(i)] = affine_backward(dout,cache)
+                dout, dW, db = affine_backward(dout, cache)
             else:
-                dout, grads['W'+str(i)], grads['b'+str(i)] = affine_relu_backward(dout, cache)
-            grads['W'+str(i)] += self.reg * self.params['W'+str(i)] 
+                if self.use_batchnorm:
+                    dout, dW, db, dgamma, dbeta = affine_bn_relu_backward(dout, cache)
+                    grads.update({'gamma'+str(i) : dgamma,
+                                  'beta'+str(i) : dbeta
+                                 })
+                else:
+                    dout, dW, db = affine_relu_backward(dout, cache)
+            dW += self.reg * self.params['W'+str(i)] 
+            
+            grads.update({'W'+str(i) : dW,
+                          'b'+str(i) : db
+                          })
         
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################
 
         return loss, grads
+
+def affine_bn_relu_forward(x, w, b, gamma, beta, bn_param):
+    """
+    Convenience layer that perorms an affine transform, batch-norm, and ReLU in that order
+
+    Inputs:
+    - x: Input to the affine layer
+    - w, b: Weights for the affine layer
+    - gamma: Scale parameter of shape (D,)
+    - beta: Shift paremeter of shape (D,)
+    - bn_param: Dictionary with the following keys:
+      - mode: 'train' or 'test'; required
+      - eps: Constant for numeric stability
+      - momentum: Constant for running mean / variance.
+      - running_mean: Array of shape (D,) giving running mean of features
+      - running_var Array of shape (D,) giving running variance of features
+
+    Returns a tuple of:
+    - out: Output from the ReLU
+    - cache: Object to give to the backward pass
+    """
+    affine_out, fc_cache = affine_forward(x, w, b)
+    bn_out, bn_cache = batchnorm_forward(affine_out, gamma, beta, bn_param)
+    out, relu_cache = relu_forward(bn_out)
+    cache = (fc_cache, bn_cache, relu_cache)
+    return out, cache
+
+def affine_bn_relu_backward(dout, cache):
+    """
+    Backward pass for the affine-batchnorm-relu convenience layer
+    """
+    fc_cache, bn_cache, relu_cache = cache
+    drelu = relu_backward(dout, relu_cache)
+    dbn, dgamma, dbeta = batchnorm_backward(drelu, bn_cache)
+    dx, dw, db = affine_backward(dbn, fc_cache)
+    return dx, dw, db, dgamma, dbeta
+
+    
