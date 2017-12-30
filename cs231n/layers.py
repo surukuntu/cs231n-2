@@ -184,7 +184,15 @@ def batchnorm_forward(x, gamma, beta, bn_param):
         # variance, storing your result in the running_mean and running_var   #
         # variables.                                                          #
         #######################################################################
-        pass
+        mean = np.mean(x, axis=0) #(D,)
+        var = np.var(x, axis=0) #(D,)
+        q = x - mean #(N,D)
+        r = 1/np.sqrt(var+eps)  #(D,)
+        p = q * r #(N,D)
+        out = gamma * p + beta #(N,D)
+        running_mean = momentum * running_mean + (1 - momentum) * mean #(D,)
+        running_var = momentum * running_var + (1 - momentum) * var #(D,)  
+        cache = (gamma, p, r)
         #######################################################################
         #                           END OF YOUR CODE                          #
         #######################################################################
@@ -195,7 +203,8 @@ def batchnorm_forward(x, gamma, beta, bn_param):
         # then scale and shift the normalized data using gamma and beta.      #
         # Store the result in the out variable.                               #
         #######################################################################
-        pass
+        p = (x - running_mean)/np.sqrt(running_var + eps) #(N,D)
+        out = gamma * p + beta #(N,D)
         #######################################################################
         #                          END OF YOUR CODE                           #
         #######################################################################
@@ -231,7 +240,22 @@ def batchnorm_backward(dout, cache):
     # TODO: Implement the backward pass for batch normalization. Store the    #
     # results in the dx, dgamma, and dbeta variables.                         #
     ###########################################################################
-    pass
+    N = dout.shape[0]
+    gamma, p, r = cache
+    #f = gamma * p + beta
+    dfbeta = 1
+    dfgamma = p #(N,D) 
+    dfp = gamma #(D,)
+    # p = q * r
+    dpq = r #(D,)
+    # q = x - mu
+    dqx = 1
+    dpx = dpq * dqx # (D,)
+    dfx = dfp * dpx #(D,)
+    
+    dbeta = np.sum(dout, axis=0) * dfbeta #(D,)
+    dgamma = np.sum(dout*dfgamma, axis=0)#(D,)
+    dx = dout * dfx #(N,D)
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################

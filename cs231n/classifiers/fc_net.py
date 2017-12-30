@@ -62,7 +62,7 @@ class TwoLayerNet(object):
 
         Inputs:
         - X: Array of input data of shape (N, d_1, ..., d_k)
-        - y: Array of labels, of shape (N,). y[i] gives the label for X[i].
+        - y: Array of labels, of shape (N,). y[i] gives the label for X[i]
 
         Returns:
         If y is None, then run a test-time forward pass of the model and return:
@@ -109,8 +109,8 @@ class TwoLayerNet(object):
         loss += 0.5 * reg * np.sum(W1 * W1)
         grad_X2, grads['W2'], grads['b2'] = affine_backward(dscores, affine2_cache)
         grad_X, grads['W1'], grads['b1'] = affine_relu_backward(grad_X2, affine_relu_cache)
-        grads['W2'] += reg * grads['W2']
-        grads['W1'] += reg * grads['W1']
+        grads['W2'] += reg * W2
+        grads['W1'] += reg * W1
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################
@@ -176,20 +176,11 @@ class FullyConnectedNet(object):
         # beta2, etc. Scale parameters should be initialized to one and shift      #
         # parameters should be initialized to zero.                                #
         ############################################################################
-        for layer_num in range(1, self.num_layers+1):
-            if(layer_num == 1):
-                prev_dim = input_dim
-            else:
-                #-1 for previous, another -1 because hidden_dims is 0 indexed
-                prev_dim = hidden_dims[layer_num-2]#
-                
-            if(layer_num == self.num_layers):
-                cur_dim = num_classes
-            else:
-                cur_dim = hidden_dims[layer_num-1]
-                
-            self.params['W'+str(layer_num)] = weight_scale * np.random.randn(prev_dim, cur_dim)
-            self.params['b'+str(layer_num)] = np.zeros(cur_dim)
+        dims = [input_dim] + hidden_dims + [num_classes]
+        weights = {'W'+str(i) : np.random.randn(dims[i-1], dims[i]) for i in range(1,len(dims))}
+        biases = {'b'+str(i) : np.zeros(dims[i]) for i in range(1,len(dims))}
+        self.params.update(weights)
+        self.params.update(biases)
             
         ############################################################################
         #                             END OF YOUR CODE                             #
@@ -249,17 +240,15 @@ class FullyConnectedNet(object):
         # layer, etc.                                                              #
         ############################################################################
         caches = {}
-        for layer_num in range(1, self.num_layers+1):
-            if(layer_num == 1):
-                cur_x = X
+        cur_x = X
+        for i in range(1, self.num_layers+1):
+            cur_w = self.params['W' + str(i)]
+            cur_b = self.params['b' + str(i)]
+            if(i == self.num_layers):
+                scores, caches[i] = affine_forward(cur_x, cur_w, cur_b)
             else:
-                cur_x = scores
-            cur_w = self.params['W' + str(layer_num)]
-            cur_b = self.params['b' + str(layer_num)]
-            if(layer_num == self.num_layers):
-                scores, caches[layer_num] = affine_forward(cur_x, cur_w, cur_b)
-            else:
-                scores, caches[layer_num] = affine_relu_forward(cur_x, cur_w, cur_b)
+                scores, caches[i] = affine_relu_forward(cur_x, cur_w, cur_b)
+            cur_x = scores
             
         ############################################################################
         #                             END OF YOUR CODE                             #
@@ -284,18 +273,18 @@ class FullyConnectedNet(object):
         # of 0.5 to simplify the expression for the gradient.                      #
         ############################################################################
         loss, dscores = softmax_loss(scores, y)
-        for layer_num in range(1, self.num_layers+1):
-            cur_w = self.params['W'+str(layer_num)]
+        for i in range(1, self.num_layers + 1):
+            cur_w = self.params['W'+str(i)]
             loss += 0.5 * self.reg * np.sum(cur_w * cur_w)
             
         dout = dscores
-        for layer_num in reversed(range(1, self.num_layers+1)):
-            cache = caches[layer_num]
-            if(layer_num == self.num_layers):
-                dout, grads['W'+str(layer_num)], grads['b'+str(layer_num)] = affine_backward(dout,cache)
+        for i in reversed(range(1, self.num_layers+1)):
+            cache = caches[i]
+            if(i == self.num_layers):
+                dout, grads['W'+str(i)], grads['b'+str(i)] = affine_backward(dout,cache)
             else:
-                dout, grads['W'+str(layer_num)], grads['b'+str(layer_num)] = affine_relu_backward(dout, cache)
-            grads['W'+str(layer_num)] += self.reg * grads['W'+str(layer_num)] 
+                dout, grads['W'+str(i)], grads['b'+str(i)] = affine_relu_backward(dout, cache)
+            grads['W'+str(i)] += self.reg * self.params['W'+str(i)] 
         
         ############################################################################
         #                             END OF YOUR CODE                             #

@@ -65,12 +65,12 @@ def sgd_momentum(w, dw, config=None):
     # TODO: Implement the momentum update formula. Store the updated value in #
     # the next_w variable. You should also use and update the velocity v.     #
     ###########################################################################
-    pass
+    v = config.get('momentum') * v - config.get('learning_rate') * dw
+    next_w = w + v
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
     config['velocity'] = v
-
     return next_w, config
 
 
@@ -99,7 +99,13 @@ def rmsprop(x, dx, config=None):
     # in the next_x variable. Don't forget to update cache value stored in    #
     # config['cache'].                                                        #
     ###########################################################################
-    pass
+    b = config['decay_rate']
+    v = config['cache']
+    lr = config['learning_rate']
+    e = config['epsilon']
+    v = b * v + (1-b) * np.square(dx)
+    next_x = x - (lr * dx) / (np.sqrt(v) + e)
+    config['cache'] = v
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
@@ -136,7 +142,21 @@ def adam(x, dx, config=None):
     # the next_x variable. Don't forget to update the m, v, and t variables   #
     # stored in config.                                                       #
     ###########################################################################
-    pass
+    m = config['m']
+    v = config['v']
+    t = config['t']
+    b1 = config['beta1']
+    b2 = config['beta2']
+    e = config['epsilon']
+    lr = config['learning_rate']
+    m = b1 * m + (1 - b1) * dx
+    mt = m / (1 - b1**t)
+    v = b2 * v + (1 - b2) * np.power(dx, 2)
+    vt = v / (1 - b2**t)
+    next_x = x - (lr * mt) / (np.sqrt(vt) + e)
+    config['m'] = m
+    config['v'] = v
+    config['t'] = t + 1
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
