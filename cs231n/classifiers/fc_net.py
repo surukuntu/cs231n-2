@@ -259,6 +259,11 @@ class FullyConnectedNet(object):
                     scores, caches[i] = affine_bn_relu_forward(cur_x, cur_w, cur_b, cur_gamma, cur_beta, cur_bn_param)
                 else:    
                     scores, caches[i] = affine_relu_forward(cur_x, cur_w, cur_b)
+                    
+                if self.use_dropout:
+                    scores, dropout_cache = dropout_forward(scores, self.dropout_param)
+                    caches[i] = (caches[i], dropout_cache)
+                    
             cur_x = scores
             
         ############################################################################
@@ -294,6 +299,10 @@ class FullyConnectedNet(object):
             if(i == self.num_layers):
                 dout, dW, db = affine_backward(dout, cache)
             else:
+                if self.use_dropout:
+                    cache, dropout_cache = cache
+                    dout = dropout_backward(dout, dropout_cache)
+                    
                 if self.use_batchnorm:
                     dout, dW, db, dgamma, dbeta = affine_bn_relu_backward(dout, cache)
                     grads.update({'gamma'+str(i) : dgamma,
@@ -301,8 +310,9 @@ class FullyConnectedNet(object):
                                  })
                 else:
                     dout, dW, db = affine_relu_backward(dout, cache)
+                
+                    
             dW += self.reg * self.params['W'+str(i)] 
-            
             grads.update({'W'+str(i) : dW,
                           'b'+str(i) : db
                           })
