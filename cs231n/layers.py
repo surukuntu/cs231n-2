@@ -441,8 +441,7 @@ def conv_forward_naive(x, w, b, conv_param):
     # Hint: you can use the function np.pad for padding.                      #
     ###########################################################################
     N, C, H, W = x.shape
-    F = w.shape[0]
-    HH, WW = w.shape[2:]
+    F, _, HH, WW = w.shape
     stride = conv_param['stride']
     pad = conv_param['pad']
     padWith = ((0,0),(0,0),(pad,pad),(pad,pad))
@@ -453,14 +452,13 @@ def conv_forward_naive(x, w, b, conv_param):
     out = np.zeros((N, F, OH, OW))
 
     for xi, cur_x in enumerate(xp):
-        for fi, cur_f in enumerate(w):
-            cur_f = cur_f.reshape(cur_f.size)
+        for wi, cur_w in enumerate(w):
             for row_num in range(OH):
                 x_row_num = row_num * stride
                 for col_num in range(OW):
                     x_col_num = col_num * stride
-                    rf = cur_x[:, x_row_num:x_row_num+HH, x_col_num:x_col_num+WW]
-                    out[xi, fi, row_num, col_num] = np.dot(cur_f, rf.reshape(rf.size)) + b[fi]
+                    x_receptive_field = cur_x[:, x_row_num:x_row_num+HH, x_col_num:x_col_num+WW]
+                    out[xi, wi, row_num, col_num] = np.sum(cur_w * x_receptive_field) + b[wi]
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
@@ -485,7 +483,42 @@ def conv_backward_naive(dout, cache):
     ###########################################################################
     # TODO: Implement the convolutional backward pass.                        #
     ###########################################################################
-    pass
+    x, w, b, conv_param = cache
+    N, C, H, W = x.shape
+    F, _, HH, WW = w.shape
+    stride = conv_param['stride']
+    pad = conv_param['pad']
+    padWith = ((0,0),(0,0),(pad,pad),(pad,pad))
+    OH = int((H - HH + 2 * pad)/stride + 1)
+    OW = int((W - WW + 2 * pad)/stride + 1) 
+    N, F, OH, OW = dout.shape
+    
+    dx = np.zeros(x.shape)
+    dx = np.pad(dx, padWith, 'constant')
+    dw = np.zeros(w.shape)
+    xp = np.pad(x, padWith, 'constant')
+    db = np.zeros(b.shape)
+    
+    for xi, cur_x in enumerate(xp):
+        cur_dx = dx[xi]
+        for wi, cur_w in enumerate(w):
+            cur_dw = dw[wi]
+            for row_num in range(OH):
+                x_row_num = row_num * stride
+                for col_num in range(OW):
+                    x_col_num = col_num * stride
+                    cur_dout = dout[xi, wi, row_num, col_num]
+                    #update input: dx
+                    d_x_receptive_field = cur_dx[:, x_row_num:x_row_num+HH, x_col_num:x_col_num+WW]
+                    d_x_receptive_field += cur_w * cur_dout
+                    #update weights: dw
+                    x_receptive_field = cur_x[:, x_row_num:x_row_num+HH, x_col_num:x_col_num+WW]
+                    cur_dw += x_receptive_field * cur_dout
+                    #update biases: db
+                    db[wi] += cur_dout
+                    
+    #unpad dx
+    dx = dx[:,:,pad:-pad,pad:-pad]
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
