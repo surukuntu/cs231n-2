@@ -2,3 +2,4 @@
 *.pyc
 .env/*
 jupyter-notebook-log.txt
+.ipynb_checkpoints
